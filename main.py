@@ -5,8 +5,6 @@ if (len(sys.argv)<6):
 	print("Cities, Population, Selection, Mutation, Generation")
 	sys.exit()
 
-global Cities, Population, Generation, Selection, argGeneration
-	
 argCities = int(sys.argv[1])
 argPopulation = int(sys.argv[2])
 Selection = int(sys.argv[3])
@@ -19,9 +17,9 @@ Generation = 0
 #City generation
 def initialSetup():
 	for x in range(argCities):
-		city = [random.randint(0,200), random.randint(0,200)]
+		city = [random.randint(0,200), random.randint(0,200), x+1]
 		Cities.append(city)
-		print("city "+ str(x+1) + "	[" + str(city[0]) + ", " + str(city[1])+"]")
+		print("city "+ str(city[2]) + "	[" + str(city[0]) + ", " + str(city[1])+"]")
 
 	for x in range(argPopulation):
 		solution = []
@@ -37,9 +35,9 @@ def calculateFitness():
 	for x in range(len(Population)):	
 		Population[x].calcfitness()
 	Population.sort(key=lambda X: X.fitness, reverse=False)
-	for x in range(len(Population)):
-		print(Population[x].fitness)
-
+	#for x in range(len(Population)):
+		#print(Population[x].fitness)
+	print(Population[0].fitness)
 		
 def select():
 	Selected = []
@@ -52,15 +50,35 @@ def select():
 				Chosen = True
 			if (k == len(Population)):
 				Chosen = True
-		print(k)
+		#print(k)
 		Selected.append(copy.deepcopy(Population[k-1]))
+	return Selected
 	
+def crossover(sol1, sol2):
+	select = random.randint(0,len(sol1.solution)-2)
+	solution = []
+	solution.append(sol1.solution[select])
+	solution.append(sol1.solution[select+1])
+	for x in range(len(sol2.solution)):
+		notchosen = True
+		for k in range(len(solution)):
+			if (sol2.solution[x][2] == solution[k][2]):
+				notchosen = False
+		if (notchosen):
+			solution.append(sol2.solution[x])
+	return solution
+	
+def Generatenewpop(Selected):
+	NewPop = []
+	for x in range(len(Selected)):
+		NewPop.append(Solution(crossover(Selected[random.randint(0,len(Selected)-1)],Selected[random.randint(0,len(Selected)-1)])))
+	return NewPop
 	
 def newGeneration():
 	calculateFitness()
-	select()
-		
-		
+	Selected = select()
+	return Generatenewpop(Selected)
+	
 class Solution():
 	def __init__(self, solution):
 		self.solution = solution
@@ -69,7 +87,10 @@ class Solution():
 	def calcfitness(self):
 		self.fitness = 0
 		for x in range(len(self.solution)-1):
-			self.fitness += math.sqrt(math.pow(self.solution[x+1][0]-self.solution[x][0],2)+math.pow(self.solution[x+1][1]-self.solution[x][1],2));
+			self.fitness += abs(math.sqrt(math.pow(self.solution[x+1][0]-self.solution[x][0],2)+math.pow(self.solution[x+1][1]-self.solution[x][1],2)))
+		self.fitness += abs(math.sqrt(math.pow(self.solution[0][0]-self.solution[len(self.solution)-1][0],2)+math.pow(self.solution[0][1]-self.solution[len(self.solution)-1][1],2)))
 
 initialSetup()
-newGeneration()
+for x in range(2000):
+	NextGen = newGeneration()
+	Population = NextGen

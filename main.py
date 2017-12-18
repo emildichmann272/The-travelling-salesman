@@ -37,7 +37,6 @@ def calculateFitness():
 	Population.sort(key=lambda X: X.fitness, reverse=False)
 	#for x in range(len(Population)):
 		#print(Population[x].fitness)
-	print(Population[0].fitness)
 		
 def select():
 	Selected = []
@@ -72,6 +71,7 @@ def Generatenewpop(Selected):
 	NewPop = []
 	for x in range(len(Selected)):
 		NewPop.append(Solution(crossover(Selected[random.randint(0,len(Selected)-1)],Selected[random.randint(0,len(Selected)-1)])))
+		NewPop[x].Mutate()
 	return NewPop
 	
 def newGeneration():
@@ -89,8 +89,18 @@ class Solution():
 		for x in range(len(self.solution)-1):
 			self.fitness += abs(math.sqrt(math.pow(self.solution[x+1][0]-self.solution[x][0],2)+math.pow(self.solution[x+1][1]-self.solution[x][1],2)))
 		self.fitness += abs(math.sqrt(math.pow(self.solution[0][0]-self.solution[len(self.solution)-1][0],2)+math.pow(self.solution[0][1]-self.solution[len(self.solution)-1][1],2)))
-
+	def Mutate(self):
+		if (random.randint(1,100) <= argMutation):
+			select = random.randint(0,len(self.solution)-2)
+			selected = self.solution[select]
+			self.solution[select] = self.solution[select+1]
+			self.solution[select+1] = selected
+			
 initialSetup()
-for x in range(2000):
+calculateFitness()
+print(Population[0].fitness)
+for x in range(argGeneration):
 	NextGen = newGeneration()
 	Population = NextGen
+calculateFitness()
+print(Population[0].fitness)
